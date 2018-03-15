@@ -5,7 +5,7 @@ unsigned char rotate_left(unsigned char x, int n)
 {
     unsigned char mask;
     int nbits = sizeof(x)*8;
-    mask = (nbits - n) >> x;
+    mask = x >> (nbits - n);
     return (x << n) | mask;
 }
 
