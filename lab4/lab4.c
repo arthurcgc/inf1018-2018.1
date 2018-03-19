@@ -22,7 +22,8 @@ int string2num (char *s, int base) {
 }
 
 int xbyte (packed_t word, int bytenum) {
-  /* implementar!!! */
+  int x = word >> (8 * bytenum);
+  
   return 1;
 }
 
