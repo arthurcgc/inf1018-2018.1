@@ -23,8 +23,9 @@ int string2num (char *s, int base) {
 
 int xbyte (packed_t word, int bytenum) {
   int x = word >> (8 * bytenum);
-  
-  return 1;
+  if((x & 0x80)!=0) x = x|0xFFFFFF00;
+  else x = x & 0x000000FF;
+  return x;
 }
 
 int main (int argc, char **argv) {
