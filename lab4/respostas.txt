@@ -1,0 +1,4 @@
+4.4 - Entende-se que x é maior que y porque como demos o numero como unsigned o bit negativo não é ligado em x e portanto x se torna outro numero "positivo".
+
+4.5 - O código pega o valor 0x0000000000000000 inicial de ui e combina com o valor de sc, ou seja: 0x0000000000000000 | 0xFFFFFFFF e
+         adiciona n cópias do bit mais significativo à esquerda gerando entao o valor 0xFFFFFFFFFFFFFFFF
