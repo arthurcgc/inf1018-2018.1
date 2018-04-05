@@ -7,10 +7,7 @@ int main (void) {
   char *pc = S2;
   while (*pc)
   {
-    if(*pc!=97)
-    {
     printf ("%c", *pc);
-    }
     *pc++;
   }
   printf("\n");
