@@ -16,13 +16,22 @@ void imprime_BigInt(BigInt a)
 
     BigInt res;
     BigInt a,b;
-    big_val(a,1); big_val(b,1);
+    big_val(a,2); big_val(b,3);
     printf("%s","a=" );
     imprime_BigInt(a);
     printf("%s","b=" );
     imprime_BigInt(b);
     big_sum(res,a,b);
-    printf("res=");
+    printf("sum=");
+    imprime_BigInt(res);
+    big_sub(res,a,b);
+    printf("sub=");
+    imprime_BigInt(res);
+    printf("Complemento a dois de b\n");
+    big_comp2(res,b);
+    imprime_BigInt(res);
+    printf("a*b=");
+    big_mul(res,a,b);
     imprime_BigInt(res);
     return 0;
   }
