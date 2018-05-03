@@ -2,7 +2,7 @@ Nome: Arthur Cavalcante Gomes Coelho
 Matrícula:  1313099
 Turma:  3WA
 
-As funções big_val, big_sum, big_sub e big_mul funcionam para numeros signed e unsigned.
+As funções big_val, big_sum, big_comp2, big_sub e big_mul funcionaram com todos os testes que fiz.
 Não consegui fazer as funções de shift, portanto estão como dummy no arquivo .c.
 
 
