@@ -1,18 +1,42 @@
 As funções big_val, big_sum, big_sub e big_mul funcionam para numeros signed e unsigned.
 alguns dos testes feitos:
 
-TESTE 1:
-big_val(a,2)-> a=0x02000000000000000000000000000000
-big_val(b,2)-> b=0x02000000000000000000000000000000
-big_sum(res,a,b)-> sum=0x04000000000000000000000000000000
-big_sub(res,a,b)-> sub=0x00000000000000000000000000000000
-big_comp2(a)->  0xfeffffffffffffffffffffffffffffff
-big_mul(res,a,b)-> a*b=0x0400000000000000f800010101010101
+TESTE 1(numeros pequenos positivos):
+big_val(a,2)-> a=0200000000000000
+big_val(b,3)-> b=0300000000000000
+big_sum(res,a,b)-> sum=0500000000000000
+big_sub(res,a,b)-> sub=ffffffffffffffff
+big_comp2(b)->  fdffffffffffffff
+big_mul(res,a,b)-> a*b=0600000000000000
 
-TESTE 2:
-big_val(a,2)-> a=0x02000000000000000000000000000000
-big_val(b,2)-> b=0x03000000000000000000000000000000
-big_sum(res,a,b)-> sum=0x05000000000000000000000000000000
-big_sub(res,a,b)-> sub=0xffffffffffffffffffffffffffffffff
-big_comp2(b)->  0xfdffffffffffffffffffffffffffffff
-big_mul(res,a,b)-> a*b=0x0600000000000000f800010101010101
+TESTE 2(numeros pequenos um positivo o outro negativo):
+big_val(a,2)-> a=0200000000000000
+big_val(b,-3)-> b=fdffffffffffffff
+big_sum(res,a,b)-> sum=ffffffffffffffff
+big_sub(res,a,b)-> sub=0500000000000000
+big_comp2(b)->  0300000000000000
+big_mul(res,a,b)-> a*b=faffffffffffffff
+
+TESTE 3(numeros pequenos ambos negativos):
+big_val(a,2)-> a=feffffffffffffff
+big_val(b,-3)-> b=fdffffffffffffff
+big_sum(res,a,b)-> sum=fbffffffffffffff
+big_sub(res,a,b)-> sub=0100000000000000
+big_comp2(b)->  0300000000000000
+big_mul(res,a,b)-> a*b=0600000000000000
+
+TESTE 4(numeros grandes que cabem em um long com sinais trocados):
+big_val(a,1147483647)-> a=ff35654400000000
+big_val(b,-1147483647)-> b=01ca9abbffffffff
+big_sum(res,a,b)-> sum=0000000000000000
+big_sub(res,a,b)-> sub=fe6bca8800000000
+big_comp2(b)->  ff35654400000000
+big_mul(res,a,b)-> a*b=ff6b66e14c13baed
+
+TESTE 5(numeros maiores do que um long pode armazenar com sinais trocados):
+big_val(a,-3147483647)-> a=01366544ffffffff
+big_val(b,3147483647)-> b=ffc99abb00000000
+big_sum(res,a,b)-> sum=0000000000000000
+big_sub(res,a,b)-> sub=026cca88feffffff
+big_comp2(b)->  01366544ffffffff
+big_mul(res,a,b)-> a*b=ff93d1cf4d7f8476

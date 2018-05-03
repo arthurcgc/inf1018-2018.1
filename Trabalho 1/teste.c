@@ -1,37 +1,37 @@
 #include "bigint.h"
 #include <stdio.h>
 
-void imprime_BigInt(BigInt a)
-{
-  printf("%s","0x" );
-  for(int i=0;i<NUM_BYTES;i++)
-  {
-    printf("%02x",a[i]);
+void dump (void *p) {
+  int n = sizeof(p);
+  unsigned char *p1 = p;
+  while (n--) {
+    printf("%02x", *p1);
+    p1++;
   }
-  printf("\n");
 }
 
   int main()
   {
 
     BigInt res;
-    BigInt a,b;
-    big_val(a,2); big_val(b,3);
-    printf("%s","a=" );
-    imprime_BigInt(a);
-    printf("%s","b=" );
-    imprime_BigInt(b);
+    BigInt a,b,c,d;
+    big_val(a,-3147483647); big_val(b,3147483647);
+    printf("a=\n");
+    dump(&a);
+    printf("\nb=\n");
+    dump(&b);
     big_sum(res,a,b);
-    printf("sum=");
-    imprime_BigInt(res);
+    printf("\nsum=\n");
+    dump(&res);
     big_sub(res,a,b);
-    printf("sub=");
-    imprime_BigInt(res);
-    printf("Complemento a dois de b\n");
+    printf("\nsub=\n");
+    dump(&res);
     big_comp2(res,b);
-    imprime_BigInt(res);
-    printf("a*b=");
+    printf("\nComplemento a dois de b\n");
+    dump(&res);
+    printf("\na*b=\n");
     big_mul(res,a,b);
-    imprime_BigInt(res);
+    dump(&res);
+    printf("\n");
     return 0;
   }
