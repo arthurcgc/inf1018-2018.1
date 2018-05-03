@@ -14,7 +14,7 @@ void dump (void *p) {
   {
 
     BigInt res;
-    BigInt a,b,c,d;
+    BigInt a,b;
     big_val(a,-3147483647); big_val(b,3147483647);
     printf("a=\n");
     dump(&a);

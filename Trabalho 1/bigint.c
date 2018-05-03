@@ -78,3 +78,14 @@ void big_mul(BigInt res, BigInt a, BigInt b)
   }
   big_copia(res,temp);
 }
+
+//dummy
+void big_shl(BigInt res, BigInt a, int n)
+{
+  return;
+}
+//dummy
+void big_shr(BigInt res, BigInt a, int n)
+{
+  return;
+}
