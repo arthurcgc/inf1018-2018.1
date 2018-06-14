@@ -8,18 +8,18 @@ int main(int argc, char *argv[]) {
   int res;
 
   /* Abre o arquivo fonte */
-  if ((myfp = fopen("programa", "r")) == NULL)
+  if ((myfp = fopen("SB.txt", "r")) == NULL)
   {
     perror("Falha na abertura do arquivo fonte");
     exit(1);
   }
   /* compila a função SB */
   funcaoSB = geracod(myfp);
-  fclose(myfp);
 
   /* chama a função */
-  res = (*funcaoSB) (....);  /* passando parâmetro apropriados */
-  ...
+  res = (*funcaoSB) ();  /* passando parâmetro apropriados */
+  printf("\n 1? : %d\n", res);
   liberacod(funcaoSB);
-  ...
+  fclose(myfp);
+  return 0;
 }

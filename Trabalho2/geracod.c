@@ -15,7 +15,17 @@ void liberacod(void *pf)
 
 typedef int (*funcp) ();
 
-funcp *geracod(FILE *f);
+void prologo(void *codeBlock, int *pos_codeBlock);
+
+
+void addRet(void *codeBlock, int *pos_codeBlock, int i, char type);
+
+void finaliza(void *codeBlock, int *pos_codeBlock);
+
+void parseLine(char *line, void *codeBlock, int *pos_codeBlock);
+
+
+funcp *geracod(FILE *f)
 {
   unsigned char* codeBlock = (unsigned char*) malloc(TAM_MAX); //bloco aonde vai ser armazenado codigo de maquina
   char *line = (char*)malloc(sizeof(char)*MAX_LINE_SIZE);;
@@ -28,17 +38,17 @@ funcp *geracod(FILE *f);
   }
 
   prologo(codeBlock, &pos_codeBlock);
-  while( fscanf(f, " %[^\n]", line) == 1 && readLines<LINE_MAX)
+  while( fscanf(f, " %[^\n]", line) == 1 && linesread<MAX_LINES)
   {
     linesread++;
-    parseLine(line, *codeBlock, &pos_codeBlock);
+    parseLine(line, codeBlock, &pos_codeBlock);
 
   }
   finaliza(codeBlock,&pos_codeBlock);
 
 }
 
-static void parseLine(char *line, void *codeBlock, int *pos_codeBlock)
+void parseLine(char *line, void *codeBlock, int *pos_codeBlock)
 {
   int i;
   char type;
@@ -46,16 +56,15 @@ static void parseLine(char *line, void *codeBlock, int *pos_codeBlock)
   {
     if (sscanf(line+1, "et %c%d", &type, &i) != 2)
     {
-      error("comando invalido", linha);
+      error("comando invalido", line);
     }
-
       addRet(codeBlock,pos_codeBlock, i, type);
       return;
   }
 
 }
 
-static void prologo(void *codeBlock, int *pos_codeBlock)
+void prologo(void *codeBlock, int *pos_codeBlock)
 {
   //push  %ebp
   //movq  %rsp, %rbp
@@ -63,10 +72,11 @@ static void prologo(void *codeBlock, int *pos_codeBlock)
     codeBlock[(*pos_codeBlock)++] = 0x48;
     codeBlock[(*pos_codeBlock)++] = 0x89;
     codeBlock[(*pos_codeBlock)++] = 0xe5;
+    return
 }
 
 
-static void addRet(void *codeBlock, int *pos_codeBlock, int i, char type)
+void addRet(void *codeBlock, int *pos_codeBlock, int i, char type)
 {
   if(type == 'p' && i == 1)
   {
@@ -78,13 +88,17 @@ static void addRet(void *codeBlock, int *pos_codeBlock, int i, char type)
   {
 
   }
+  else if(type == '$')
+  {
+
+  }
   else
   {
-    error("comando invalido", linha);
+    error("comando invalido\n");
   }
 }
 
-static void finaliza(void *codeBlock, int *pos_codeBlock)
+void finaliza(void *codeBlock, int *pos_codeBlock)
 {
   codeBlock[(*pos_codeBlock)++] = 0xc9;
   codeBlock[(*pos_codeBlock)++] = 0xc3;

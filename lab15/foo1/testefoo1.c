@@ -1,14 +1,13 @@
-
 #include <stdio.h>
 #include <math.h>
 
-float foo1(float a, float b);
+float foo1 (float a, float b);
 
 int main(void)
 {
 	float a = M_PI_2;
-	float b = 11.0;
+	float b = 13.0;
 	float f = foo1(a,b);
-	printf("\n%f\n", f);
+	printf("%f\n", f);
 	return 0;
 }
