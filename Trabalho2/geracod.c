@@ -24,6 +24,12 @@ void finaliza(unsigned char *codeBlock, int *pos_codeBlock);
 
 void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock);
 
+static void preenche_cons (unsigned char *codeBlock,int *pos_codeBlock, int num)
+{
+    int i;
+    for(i=0;i<4;i++,(*pos_codeBlock)++)          /*preenche em codeBlock o valor em Hexadecimal de do numero int */
+        codeBlock[(*pos_codeBlock)]=(unsigned char)(num>>(i*8));
+}
 
 funcp geracod(FILE *f)
 {
@@ -93,7 +99,12 @@ void addRet(unsigned char *codeBlock, int *pos_codeBlock, int i, char type)
   }
   else if(type == '$')
   {
+    //  mov constante
+    codeBlock[(*pos_codeBlock)++] = 0x48;
+    codeBlock[(*pos_codeBlock)++] = 0xc7;
+    codeBlock[(*pos_codeBlock)++] = 0xc0;
 
+    preenche_cons (codeBlock, pos_codeBlock, i); // preenche em codeBlock os 8 espaços que o int ocupa
   }
   else
   {

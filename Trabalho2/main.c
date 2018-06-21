@@ -8,8 +8,9 @@ int main(int argc, char *argv[])
   int res;
   funcp funcaoSB;
 
+// teste retorno de parametro
   /* Abre o arquivo fonte */
-  if ((myfp = fopen("SB.txt", "r")) == NULL)
+  if ((myfp = fopen("scripts/retp1.txt", "r")) == NULL)
   {
     perror("Falha na abertura do arquivo fonte");
     exit(1);
@@ -21,5 +22,24 @@ int main(int argc, char *argv[])
   printf("\n 5? : %d\n", res);
   liberacod(funcaoSB);
   fclose(myfp);
+//  fim do teste retorno de parametro
+
+//teste retorno de constante
+
+  if ((myfp = fopen("scripts/retcons.txt", "r")) == NULL)
+  {
+    perror("Falha na abertura do arquivo fonte");
+    exit(1);
+  }
+  funcaoSB = geracod(myfp);
+  /* chama a função */
+  res = (*funcaoSB) ();  /* passando parâmetro apropriados */
+  printf("\n 2? : %d\n", res);
+  liberacod(funcaoSB);
+  fclose(myfp);
+//fim do teste retorno de constante
+
+
+
   return 0;
 }
