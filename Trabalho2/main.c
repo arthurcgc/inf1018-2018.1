@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include "geracod.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   FILE *myfp;
-  funcp funcaoSB;
   int res;
+  funcp funcaoSB;
 
   /* Abre o arquivo fonte */
   if ((myfp = fopen("SB.txt", "r")) == NULL)
@@ -15,10 +16,9 @@ int main(int argc, char *argv[]) {
   }
   /* compila a função SB */
   funcaoSB = geracod(myfp);
-
   /* chama a função */
-  res = (*funcaoSB) ();  /* passando parâmetro apropriados */
-  printf("\n 1? : %d\n", res);
+  res = (*funcaoSB) (5);  /* passando parâmetro apropriados */
+  printf("\n 5? : %d\n", res);
   liberacod(funcaoSB);
   fclose(myfp);
   return 0;

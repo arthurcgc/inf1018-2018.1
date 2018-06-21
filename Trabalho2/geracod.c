@@ -15,23 +15,23 @@ void liberacod(void *pf)
 
 typedef int (*funcp) ();
 
-void prologo(void *codeBlock, int *pos_codeBlock);
+void prologo(unsigned char *codeBlock, int *pos_codeBlock);
 
 
-void addRet(void *codeBlock, int *pos_codeBlock, int i, char type);
+void addRet(unsigned char *codeBlock, int *pos_codeBlock, int i, char type);
 
-void finaliza(void *codeBlock, int *pos_codeBlock);
+void finaliza(unsigned char *codeBlock, int *pos_codeBlock);
 
-void parseLine(char *line, void *codeBlock, int *pos_codeBlock);
+void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock);
 
 
-funcp *geracod(FILE *f)
+funcp geracod(FILE *f)
 {
   unsigned char* codeBlock = (unsigned char*) malloc(TAM_MAX); //bloco aonde vai ser armazenado codigo de maquina
   char *line = (char*)malloc(sizeof(char)*MAX_LINE_SIZE);;
   int linesread, pos_codeBlock = 0;
 
-  if(*codeBlock == NULL)
+  if(codeBlock == NULL)
   {
     fprintf(stderr, "Falta de memoria ao alocar espaco para codigo SB.\n");
     exit(EXIT_FAILURE);
@@ -44,11 +44,12 @@ funcp *geracod(FILE *f)
     parseLine(line, codeBlock, &pos_codeBlock);
 
   }
-  finaliza(codeBlock,&pos_codeBlock);
 
+  finaliza(codeBlock,&pos_codeBlock);
+  return (funcp) ((codeBlock));
 }
 
-void parseLine(char *line, void *codeBlock, int *pos_codeBlock)
+void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock)
 {
   int i;
   char type;
@@ -56,7 +57,8 @@ void parseLine(char *line, void *codeBlock, int *pos_codeBlock)
   {
     if (sscanf(line+1, "et %c%d", &type, &i) != 2)
     {
-      error("comando invalido", line);
+      fprintf(stderr, "comando invalido");
+      exit(EXIT_FAILURE);
     }
       addRet(codeBlock,pos_codeBlock, i, type);
       return;
@@ -64,7 +66,7 @@ void parseLine(char *line, void *codeBlock, int *pos_codeBlock)
 
 }
 
-void prologo(void *codeBlock, int *pos_codeBlock)
+void prologo(unsigned char *codeBlock, int *pos_codeBlock)
 {
   //push  %ebp
   //movq  %rsp, %rbp
@@ -72,14 +74,15 @@ void prologo(void *codeBlock, int *pos_codeBlock)
     codeBlock[(*pos_codeBlock)++] = 0x48;
     codeBlock[(*pos_codeBlock)++] = 0x89;
     codeBlock[(*pos_codeBlock)++] = 0xe5;
-    return
+    return;
 }
 
 
-void addRet(void *codeBlock, int *pos_codeBlock, int i, char type)
+void addRet(unsigned char *codeBlock, int *pos_codeBlock, int i, char type)
 {
   if(type == 'p' && i == 1)
   {
+    //  mov    %rdi,%rax
     codeBlock[(*pos_codeBlock)++] = 0x48;
     codeBlock[(*pos_codeBlock)++] = 0x89;
     codeBlock[(*pos_codeBlock)++] = 0xf8;
@@ -94,12 +97,14 @@ void addRet(void *codeBlock, int *pos_codeBlock, int i, char type)
   }
   else
   {
-    error("comando invalido\n");
+    fprintf(stderr, "comando invalido\n");
+    exit(EXIT_FAILURE);
   }
 }
 
-void finaliza(void *codeBlock, int *pos_codeBlock)
+void finaliza(unsigned char *codeBlock, int *pos_codeBlock)
 {
+  //  leave ret
   codeBlock[(*pos_codeBlock)++] = 0xc9;
   codeBlock[(*pos_codeBlock)++] = 0xc3;
 }
