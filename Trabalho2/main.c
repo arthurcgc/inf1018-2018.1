@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
   funcaoSB = geracod(myfp);
   /* chama a função */
   res = (*funcaoSB) ();  /* passando parâmetro apropriados */
-  printf("\n 2? : %d\n", res);
+  printf("\n 1000? : %d\n", res);
   liberacod(funcaoSB);
   fclose(myfp);
 //fim do teste retorno de constante
