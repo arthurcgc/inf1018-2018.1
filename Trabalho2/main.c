@@ -22,6 +22,19 @@ int main(int argc, char *argv[])
   printf("\n 5? : %d\n", res);
   liberacod(funcaoSB);
   fclose(myfp);
+
+  if ((myfp = fopen("scripts/retp2.txt", "r")) == NULL)
+  {
+    perror("Falha na abertura do arquivo fonte");
+    exit(1);
+  }
+  // compila a função SB
+  funcaoSB = geracod(myfp);
+  // chama a função passando parâmetro apropriados
+  res = (*funcaoSB) (5,6);
+  printf("\n 6? : %d\n", res);
+  liberacod(funcaoSB);
+  fclose(myfp);
 //  fim do teste retorno de parametro
 
 //teste retorno de constante
@@ -32,14 +45,43 @@ int main(int argc, char *argv[])
     exit(1);
   }
   funcaoSB = geracod(myfp);
-  /* chama a função */
-  res = (*funcaoSB) ();  /* passando parâmetro apropriados */
+  // chama a função passando parâmetro apropriados
+  res = (*funcaoSB) ();
   printf("\n 1000? : %d\n", res);
   liberacod(funcaoSB);
   fclose(myfp);
 //fim do teste retorno de constante
 
+//teste atribuicao + retorno
 
+  if ((myfp = fopen("scripts/mov$p1.txt", "r")) == NULL)
+  {
+    perror("Falha na abertura do arquivo fonte");
+    exit(1);
+  }
+  funcaoSB = geracod(myfp);
+  // chama a função passando parâmetro apropriados
+  res = (*funcaoSB) (5);
+  printf("\n 1100? : %d\n", res);
+  liberacod(funcaoSB);
+  fclose(myfp);
+//fim do teste atribuicao + retorno
+
+
+//teste testesimples.txt
+
+  if ((myfp = fopen("scripts/testesimples.txt", "r")) == NULL)
+  {
+    perror("Falha na abertura do arquivo fonte");
+    exit(1);
+  }
+  funcaoSB = geracod(myfp);
+  // chama a função passando parâmetro apropriados
+  res = (*funcaoSB) (10);
+  printf("\n 5? : %d\n", res);
+  liberacod(funcaoSB);
+  fclose(myfp);
+//fim do teste atribuicao + retorno
 
   return 0;
 }

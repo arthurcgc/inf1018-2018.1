@@ -20,6 +20,8 @@ void prologo(unsigned char *codeBlock, int *pos_codeBlock);
 
 void addRet(unsigned char *codeBlock, int *pos_codeBlock, int i, char type);
 
+void addAtribuicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int i1, char type2, int i2);
+
 void finaliza(unsigned char *codeBlock, int *pos_codeBlock);
 
 void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock);
@@ -57,45 +59,181 @@ funcp geracod(FILE *f)
 
 void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock)
 {
-  int i;
-  char type;
-  if (line[0] == 'r' )
+  int i1,i2;
+  char type1,type2;
+  if (line[0] == 'r' ) //retorno
   {
-    if (sscanf(line+1, "et %c%d", &type, &i) != 2)
+    if (sscanf(line+1, "et %c%d", &type1, &i1) != 2)
     {
       fprintf(stderr, "comando invalido");
       exit(EXIT_FAILURE);
     }
-      addRet(codeBlock,pos_codeBlock, i, type);
+      addRet(codeBlock,pos_codeBlock, i1, type1);
       return;
   }
 
+  else if (line[0] == 'v' || line[0] == 'p') //operacao
+  {
+    if(sscanf(line,"%c%d", &type1, &i1) != 2)
+    {
+      fprintf(stderr, "comando invalido");
+      exit(EXIT_FAILURE);
+    }
+    if(line[3] == ':' && line[4] == '=') //atribuicao
+    {
+      if(sscanf(line+5," %c%d", &type2, &i2) !=2)
+      {
+        fprintf(stderr, "comando invalido");
+        exit(EXIT_FAILURE);
+      }
+      addAtribuicao(codeBlock,pos_codeBlock,type1,i1,type2,i2);
+    }
+  }
+}
+
+void addAtribuicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int i1, char type2, int i2)
+{
+  //v1 = %r10, v2 = %r11, v3 = %r12, v4= %r13
+
+  //atribuicao de parametro
+  if(type1 == 'p')
+  {
+    if(type2 == 'v')  //caso lado direito = variavel
+    {
+      if(i1 == 1)
+      {
+        //movl %rxd,%edi
+        codeBlock[(*pos_codeBlock)++] = 0x44;
+        codeBlock[(*pos_codeBlock)++] = 0x89;
+        codeBlock[(*pos_codeBlock)++] = (0xd7 - 0x8) + i2 * 0x8;
+      }
+      else if(i1 == 2)
+      {
+        //movl %rxd,%edi
+        codeBlock[(*pos_codeBlock)++] = 0x44;
+        codeBlock[(*pos_codeBlock)++] = 0x89;
+        codeBlock[(*pos_codeBlock)++] = (0xd6 - 0x8) + i2 * 0x8;
+      }
+    }
+    else if(type2 == 'p' && i1 != i2)  //caso lado direito = parametro
+    {
+      //movq %rsi,%rdi ou movq %rdi,%rsi
+      codeBlock[(*pos_codeBlock)++] = 0x48;
+      codeBlock[(*pos_codeBlock)++] = 0x89;
+
+      // p1 := p2 -> movq %rsi,%rdi
+      if(i1 == 1) codeBlock[(*pos_codeBlock)++] = 0xf7;
+
+      //  p2 := p1 ->movq %rdi,%rsi
+      else if(i1 == 2)  codeBlock[(*pos_codeBlock)++] = 0xfe;
+    }
+    else if(type2 == '$')  //caso lado direito = constante
+    {
+      //movq $x,%rdi ou %rsi
+      codeBlock[(*pos_codeBlock)++] = 0x48;
+      codeBlock[(*pos_codeBlock)++] = 0xc7;
+
+      if(i1 == 1) codeBlock[(*pos_codeBlock)++] = 0xc7;  //  mov = $x,%rdi
+
+      else if(i1 == 2)  codeBlock[(*pos_codeBlock)++] = 0xc6; //  mov = $x,%rsi
+
+      // preenche o numero int no codeBlock para terminar a intrucao de mov
+      preenche_cons(codeBlock, pos_codeBlock, i2);
+    }
+  }
+
+  //fim de attribuicao a parametro
+
+  //atribuicao de variavel
+  else if(type1 == 'v')
+  {
+    if(type2 == '$')
+    {
+        //  mov = $x,%rxd
+        codeBlock[(*pos_codeBlock)++] = 0x41;
+        codeBlock[(*pos_codeBlock)++] = (0xba - 0x1) + i1*0x1;
+        preenche_cons(codeBlock, pos_codeBlock, i2);
+        /*if(i1 == 1)
+        {
+          codeBlock[(*pos_codeBlock)++] = 0xba;
+          preenche_cons(codeBlock, pos_codeBlock, i2);
+        }
+        else
+        {
+          codeBlock[(*pos_codeBlock)++] = 0xba + 0x1;
+          preenche_cons(codeBlock, pos_codeBlock, i2);
+        }*/
+    }
+
+}
 }
 
 void prologo(unsigned char *codeBlock, int *pos_codeBlock)
 {
-  //push  %ebp
+
+  //pushq  %rbp
   //movq  %rsp, %rbp
     codeBlock[(*pos_codeBlock)++] = 0x55;
     codeBlock[(*pos_codeBlock)++] = 0x48;
     codeBlock[(*pos_codeBlock)++] = 0x89;
     codeBlock[(*pos_codeBlock)++] = 0xe5;
+
+  // subq $32,%rsp
+    codeBlock[(*pos_codeBlock)++] = 0x48;
+    codeBlock[(*pos_codeBlock)++] = 0x83;
+    codeBlock[(*pos_codeBlock)++] = 0xec;
+    codeBlock[(*pos_codeBlock)++] = 0x20;
+
+  //movq %r10,(%rsp)
+    codeBlock[(*pos_codeBlock)++] = 0x4c;
+    codeBlock[(*pos_codeBlock)++] = 0x89;
+    codeBlock[(*pos_codeBlock)++] = 0x14;
+    codeBlock[(*pos_codeBlock)++] = 0x24;
+
+  // movq %r11,8(%rsp)
+    codeBlock[(*pos_codeBlock)++] = 0x4c;
+    codeBlock[(*pos_codeBlock)++] = 0x89;
+    codeBlock[(*pos_codeBlock)++] = 0x5c;
+    codeBlock[(*pos_codeBlock)++] = 0x24;
+    codeBlock[(*pos_codeBlock)++] = 0x08;
+
+  // movq %r12,16(%rsp)
+    codeBlock[(*pos_codeBlock)++] = 0x4c;
+    codeBlock[(*pos_codeBlock)++] = 0x89;
+    codeBlock[(*pos_codeBlock)++] = 0x64;
+    codeBlock[(*pos_codeBlock)++] = 0x24;
+    codeBlock[(*pos_codeBlock)++] = 0x10;
+
+  // movq %r13,24(%rsp)
+    codeBlock[(*pos_codeBlock)++] = 0x4c;
+    codeBlock[(*pos_codeBlock)++] = 0x89;
+    codeBlock[(*pos_codeBlock)++] = 0x6c;
+    codeBlock[(*pos_codeBlock)++] = 0x24;
+    codeBlock[(*pos_codeBlock)++] = 0x18;
+
+
     return;
 }
 
 
 void addRet(unsigned char *codeBlock, int *pos_codeBlock, int i, char type)
 {
-  if(type == 'p' && i == 1)
+  if(type == 'p')
   {
-    //  mov    %rdi,%rax
-    codeBlock[(*pos_codeBlock)++] = 0x48;
-    codeBlock[(*pos_codeBlock)++] = 0x89;
-    codeBlock[(*pos_codeBlock)++] = 0xf8;
-  }
-  else if (type == 'c')
-  {
-
+    if(i == 1)
+    {
+    //  movq    %rdi,%rax
+      codeBlock[(*pos_codeBlock)++] = 0x48;
+      codeBlock[(*pos_codeBlock)++] = 0x89;
+      codeBlock[(*pos_codeBlock)++] = 0xf8;
+    }
+    else if (i == 2)
+    {
+      //movq %rsi,%rax
+      codeBlock[(*pos_codeBlock)++] = 0x48;
+      codeBlock[(*pos_codeBlock)++] = 0x89;
+      codeBlock[(*pos_codeBlock)++] = 0xf0;
+    }
   }
   else if(type == '$')
   {
@@ -106,6 +244,14 @@ void addRet(unsigned char *codeBlock, int *pos_codeBlock, int i, char type)
 
     preenche_cons (codeBlock, pos_codeBlock, i); // preenche em codeBlock os 8 espaços que o int ocupa
   }
+  else if(type == 'v')
+  {
+    //utilizarei os registradores de 32 bits para facilitar o entendimento e a didática do codigo já que estamos mechendo com inteiros
+    codeBlock[(*pos_codeBlock)++] = 0x44;
+    codeBlock[(*pos_codeBlock)++] = 0x89;
+    if(i == 1)  codeBlock[(*pos_codeBlock)++] = 0xd0;
+    else codeBlock[(*pos_codeBlock)++] = 0xd0 + (0x8*i); //testar depois e remover esse comentario se estiver funcionando!!!
+  }
   else
   {
     fprintf(stderr, "comando invalido\n");
@@ -115,7 +261,39 @@ void addRet(unsigned char *codeBlock, int *pos_codeBlock, int i, char type)
 
 void finaliza(unsigned char *codeBlock, int *pos_codeBlock)
 {
-  //  leave ret
-  codeBlock[(*pos_codeBlock)++] = 0xc9;
+
+  //movq (%rsp),%r10
+  codeBlock[(*pos_codeBlock)++] = 0x4c;
+  codeBlock[(*pos_codeBlock)++] = 0x8b;
+  codeBlock[(*pos_codeBlock)++] = 0x14;
+  codeBlock[(*pos_codeBlock)++] = 0x24;
+
+  //movq 8(%rsp),%r11
+  codeBlock[(*pos_codeBlock)++] = 0x4c;
+  codeBlock[(*pos_codeBlock)++] = 0x8b;
+  codeBlock[(*pos_codeBlock)++] = 0x5c;
+  codeBlock[(*pos_codeBlock)++] = 0x24;
+  codeBlock[(*pos_codeBlock)++] = 0x08;
+  //movq 16(%rsp),%r12
+  codeBlock[(*pos_codeBlock)++] = 0x4c;
+  codeBlock[(*pos_codeBlock)++] = 0x8b;
+  codeBlock[(*pos_codeBlock)++] = 0x64;
+  codeBlock[(*pos_codeBlock)++] = 0x24;
+  codeBlock[(*pos_codeBlock)++] = 0x10;
+
+  //movq 24(%rsp),%r13
+  codeBlock[(*pos_codeBlock)++] = 0x4c;
+  codeBlock[(*pos_codeBlock)++] = 0x8b;
+  codeBlock[(*pos_codeBlock)++] = 0x6c;
+  codeBlock[(*pos_codeBlock)++] = 0x24;
+  codeBlock[(*pos_codeBlock)++] = 0x18;
+
+  //movq %rbp,%rsp
+  //popq  %rbp
+  //ret
+  codeBlock[(*pos_codeBlock)++] = 0x48;
+  codeBlock[(*pos_codeBlock)++] = 0x89;
+  codeBlock[(*pos_codeBlock)++] = 0xec;
+  codeBlock[(*pos_codeBlock)++] = 0x5d;
   codeBlock[(*pos_codeBlock)++] = 0xc3;
 }
