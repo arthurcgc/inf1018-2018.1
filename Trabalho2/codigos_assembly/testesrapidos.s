@@ -20,7 +20,14 @@ add:
     movq %r13, 24(%rsp)
 
   operacoes:
-    movl  %r10d,%esi
+    movl  %edi,%r10d
+    movl  %esi,%r10d
+    movl  %edi,%r11d
+    movl  %esi,%r11d
+    movl  %edi,%r12d
+    movl  %esi,%r12d
+    movl  %edi,%r13d
+    movl  %esi,%r13d
 
   fim:
     movq (%rsp), %r10

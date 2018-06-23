@@ -105,14 +105,14 @@ void addAtribuicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int
         //movl %rxd,%edi
         codeBlock[(*pos_codeBlock)++] = 0x44;
         codeBlock[(*pos_codeBlock)++] = 0x89;
-        codeBlock[(*pos_codeBlock)++] = (0xd7 - 0x8) + i2 * 0x8;
+        codeBlock[(*pos_codeBlock)++] = (0xd7 - 0x8) + i2 * 0x8;//desloca conforme o índice
       }
       else if(i1 == 2)
       {
         //movl %rxd,%edi
         codeBlock[(*pos_codeBlock)++] = 0x44;
         codeBlock[(*pos_codeBlock)++] = 0x89;
-        codeBlock[(*pos_codeBlock)++] = (0xd6 - 0x8) + i2 * 0x8;
+        codeBlock[(*pos_codeBlock)++] = (0xd6 - 0x8) + i2 * 0x8;//desloca conforme o índice
       }
     }
     else if(type2 == 'p' && i1 != i2)  //caso lado direito = parametro
@@ -141,31 +141,33 @@ void addAtribuicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int
       preenche_cons(codeBlock, pos_codeBlock, i2);
     }
   }
-
   //fim de attribuicao a parametro
 
   //atribuicao de variavel
   else if(type1 == 'v')
   {
-    if(type2 == '$')
+    if(type2 == '$') //lado direto = constante
     {
-        //  mov = $x,%rxd
+        //  movl = $x,%exd
         codeBlock[(*pos_codeBlock)++] = 0x41;
-        codeBlock[(*pos_codeBlock)++] = (0xba - 0x1) + i1*0x1;
+        codeBlock[(*pos_codeBlock)++] = (0xba - 0x1) + i1 * 0x1; //desloca conforme o índice
         preenche_cons(codeBlock, pos_codeBlock, i2);
-        /*if(i1 == 1)
-        {
-          codeBlock[(*pos_codeBlock)++] = 0xba;
-          preenche_cons(codeBlock, pos_codeBlock, i2);
-        }
-        else
-        {
-          codeBlock[(*pos_codeBlock)++] = 0xba + 0x1;
-          preenche_cons(codeBlock, pos_codeBlock, i2);
-        }*/
     }
-
-}
+    else if(type2 == 'v' && i2 != i1) //lado direito = variavel
+    {
+        //  movl = $exd,%exd
+      codeBlock[(*pos_codeBlock)++] = 0x45;
+      codeBlock[(*pos_codeBlock)++] = 0x89;
+      codeBlock[(*pos_codeBlock)++] = ((0xd1 + 0x1 * i1) - 0x8) + 0x8 * i2;//desloca conforme os índices
+    }
+    else if(type2 == 'p') //lado direito = parametro
+    {
+      //  movl = $e(ds)i,%exd
+      codeBlock[(*pos_codeBlock)++] = 0x41;
+      codeBlock[(*pos_codeBlock)++] = 0x89;
+      codeBlock[(*pos_codeBlock)++] = (0xf9 + 0x1 * i1 + 0x8) - 0x8 * i2;//desloca conforme os índices
+    }
+  }
 }
 
 void prologo(unsigned char *codeBlock, int *pos_codeBlock)
@@ -249,8 +251,7 @@ void addRet(unsigned char *codeBlock, int *pos_codeBlock, int i, char type)
     //utilizarei os registradores de 32 bits para facilitar o entendimento e a didática do codigo já que estamos mechendo com inteiros
     codeBlock[(*pos_codeBlock)++] = 0x44;
     codeBlock[(*pos_codeBlock)++] = 0x89;
-    if(i == 1)  codeBlock[(*pos_codeBlock)++] = 0xd0;
-    else codeBlock[(*pos_codeBlock)++] = 0xd0 + (0x8*i); //testar depois e remover esse comentario se estiver funcionando!!!
+    codeBlock[(*pos_codeBlock)++] = (0xd0 - 0x8) + 0x8 * i;
   }
   else
   {
