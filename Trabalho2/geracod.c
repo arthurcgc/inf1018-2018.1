@@ -184,6 +184,7 @@ void addAdicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int i1,
   {
     if(type2 == '$')
     {
+      //addq $x,%r(ds)i
       codeBlock[(*pos_codeBlock)++] = 0x48;
       codeBlock[(*pos_codeBlock)++] = 0x81;
       codeBlock[(*pos_codeBlock)++] =  (0xc7 + 0x1) - 0x1 * i1;
@@ -191,9 +192,43 @@ void addAdicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int i1,
     }
     else if(type2 == 'v')
     {
-
+      codeBlock[(*pos_codeBlock)++] = 0x4c;
+      codeBlock[(*pos_codeBlock)++] = 0x01;
+      codeBlock[(*pos_codeBlock)++] = ((0xd7 + 0x1) - (0x1 * i1) - 0x8) + 0x8 * i2;
+    }
+    else if(type2 == 'p' && i1 != i2)
+    {
+      codeBlock[(*pos_codeBlock)++] = 0x48;
+      codeBlock[(*pos_codeBlock)++] = 0x01;
+      if(i1 == 1) codeBlock[(*pos_codeBlock)++] = 0xf7;
+      if(i1 == 2) codeBlock[(*pos_codeBlock)++] = 0xfe;
+    }
+    return;
+  }
+  else if(type1 == 'v')
+  {
+    if(type2 == '$')
+    {
+      codeBlock[(*pos_codeBlock)++] = 0x49;
+      codeBlock[(*pos_codeBlock)++] = 0x81;
+      codeBlock[(*pos_codeBlock)++] = (0xc2 -0x1) + 0x1 * i1;
+      preenche_cons(codeBlock,pos_codeBlock,i2);
+    }
+    else if(type2 == 'p')
+    {
+      codeBlock[(*pos_codeBlock)++] = 0x49;
+      codeBlock[(*pos_codeBlock)++] = 0x01;
+      if(i2 == 1) codeBlock[(*pos_codeBlock)++] = (0xfa - 0x1) + 0x1 * i1;
+      if(i2 == 2) codeBlock[(*pos_codeBlock)++] = (0xf2 - 0x1) + 0x1 * i1;
+    }
+    else if(type2 == 'v')
+    {
+      codeBlock[(*pos_codeBlock)++] = 0x4d;
+      codeBlock[(*pos_codeBlock)++] = 0x01;
+      codeBlock[(*pos_codeBlock)++] = ((0xd2 - 0x1) + 0x1 * i1) - 0x8 + (0x8 * i2) ;
     }
   }
+
   return;
 }
 
@@ -250,19 +285,22 @@ void addRet(unsigned char *codeBlock, int *pos_codeBlock, int i, char type)
     //utilizarei os registradores de 32 bits para facilitar o entendimento e a didática do codigo já que estamos mexendo com inteiros
   if(type == 'p')
   {
-    //  movl    %edi,%eax
+    //  movl    %r(ds)i,%rax
+      codeBlock[(*pos_codeBlock)++] = 0x48;
       codeBlock[(*pos_codeBlock)++] = 0x89;
       codeBlock[(*pos_codeBlock)++] = (0xf8 + 0x8) - 0x8 * i;
   }
   else if(type == '$')
   {
     //  mov constante
-    codeBlock[(*pos_codeBlock)++] = 0xb8;
+    codeBlock[(*pos_codeBlock)++] = 0x48;
+    codeBlock[(*pos_codeBlock)++] = 0xc7;
+    codeBlock[(*pos_codeBlock)++] = 0xc0;
     preenche_cons (codeBlock, pos_codeBlock, i); // preenche em codeBlock os 8 espaços que o int ocupa
   }
   else if(type == 'v')
   {
-    codeBlock[(*pos_codeBlock)++] = 0x44;
+    codeBlock[(*pos_codeBlock)++] = 0x4c;
     codeBlock[(*pos_codeBlock)++] = 0x89;
     codeBlock[(*pos_codeBlock)++] = (0xd0 - 0x8) + 0x8 * i;
   }

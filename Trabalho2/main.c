@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
   funcaoSB = geracod(myfp);
   /* chama a função */
   res = (*funcaoSB) (5);  /* passando parâmetro apropriados */
-  printf("\n 5? : %d\n", res);
+  printf("teste retorno de p1\n 5? : %d\n", res);
   liberacod(funcaoSB);
   fclose(myfp);
 
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
   funcaoSB = geracod(myfp);
   // chama a função passando parâmetro apropriados
   res = (*funcaoSB) (5,6);
-  printf("\n 6? : %d\n", res);
+  printf("teste retorno de p2\n 6? : %d\n", res);
   liberacod(funcaoSB);
   fclose(myfp);
 //  fim do teste retorno de parametro
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
   funcaoSB = geracod(myfp);
   // chama a função passando parâmetro apropriados
   res = (*funcaoSB) ();
-  printf("\n 1000? : %d\n", res);
+  printf("teste retorno de constante $\n 1000? : %d\n", res);
   liberacod(funcaoSB);
   fclose(myfp);
 //fim do teste retorno de constante
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
   funcaoSB = geracod(myfp);
   // chama a função passando parâmetro apropriados
   res = (*funcaoSB) (5);
-  printf("\n 1100? : %d\n", res);
+  printf("teste atribuicao de p1\n 1100? : %d\n", res);
   liberacod(funcaoSB);
   fclose(myfp);
 //fim do teste atribuicao + retorno
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
   funcaoSB = geracod(myfp);
   // chama a função passando parâmetro apropriados
   res = (*funcaoSB) (10);
-  printf("\n 5442? : %d\n", res);
+  printf("testesimples.txt\n 5442? : %d\n", res);
   liberacod(funcaoSB);
   fclose(myfp);
 //fim do teste atribuicao + retorno
@@ -92,8 +92,8 @@ int main(int argc, char *argv[])
   }
   funcaoSB = geracod(myfp);
   // chama a função passando parâmetro apropriados
-  res = (*funcaoSB) (100);
-  printf("\n 228? : %d\n", res);
+  res = (*funcaoSB) (100,200);
+  printf("teste adicao\n 300? : %d\n", res);
   liberacod(funcaoSB);
   fclose(myfp);
 //fim do teste atribuicao + retorno
