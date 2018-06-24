@@ -22,6 +22,8 @@ void addRet(unsigned char *codeBlock, int *pos_codeBlock, int i, char type);
 
 void addAtribuicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int i1, char type2, int i2);
 
+void addAdicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int i1, char type2, int i2);
+
 void finaliza(unsigned char *codeBlock, int *pos_codeBlock);
 
 void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock);
@@ -29,7 +31,7 @@ void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock);
 static void preenche_cons (unsigned char *codeBlock,int *pos_codeBlock, int num)
 {
     int i;
-    for(i=0;i<4;i++,(*pos_codeBlock)++)          /*preenche em codeBlock o valor em Hexadecimal de do numero int */
+    for(i=0;i<4;i++,(*pos_codeBlock)++)          /*preenche em codeBlock o valor em Hexadecimal do numero int */
         codeBlock[(*pos_codeBlock)]=(unsigned char)(num>>(i*8));
 }
 
@@ -65,7 +67,7 @@ void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock)
   {
     if (sscanf(line+1, "et %c%d", &type1, &i1) != 2)
     {
-      fprintf(stderr, "comando invalido");
+      fprintf(stderr, "comando invalido\n");
       exit(EXIT_FAILURE);
     }
       addRet(codeBlock,pos_codeBlock, i1, type1);
@@ -76,19 +78,29 @@ void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock)
   {
     if(sscanf(line,"%c%d", &type1, &i1) != 2)
     {
-      fprintf(stderr, "comando invalido");
+      fprintf(stderr, "comando invalido\n");
       exit(EXIT_FAILURE);
     }
     if(line[3] == ':' && line[4] == '=') //atribuicao
     {
       if(sscanf(line+5," %c%d", &type2, &i2) !=2)
       {
-        fprintf(stderr, "comando invalido");
+        fprintf(stderr, "comando invalido\n");
         exit(EXIT_FAILURE);
       }
       addAtribuicao(codeBlock,pos_codeBlock,type1,i1,type2,i2);
     }
+    else if(line[3] == '+' && line[4] == '=') //operacao
+    {
+      if(sscanf(line+5," %c%d", &type2, &i2) !=2)
+      {
+        fprintf(stderr, "comando invalido\n");
+        exit(EXIT_FAILURE);
+      }
+      addAdicao(codeBlock,pos_codeBlock,type1,i1,type2,i2);
+    }
   }
+  return;
 }
 
 void addAtribuicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int i1, char type2, int i2)
@@ -100,18 +112,16 @@ void addAtribuicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int
   {
     if(type2 == 'v')  //caso lado direito = variavel
     {
+      codeBlock[(*pos_codeBlock)++] = 0x4c;
+      codeBlock[(*pos_codeBlock)++] = 0x89;
       if(i1 == 1)
       {
-        //movl %rxd,%edi
-        codeBlock[(*pos_codeBlock)++] = 0x44;
-        codeBlock[(*pos_codeBlock)++] = 0x89;
+        //movq %rxd,%rdi
         codeBlock[(*pos_codeBlock)++] = (0xd7 - 0x8) + i2 * 0x8;//desloca conforme o índice
       }
       else if(i1 == 2)
       {
-        //movl %rxd,%edi
-        codeBlock[(*pos_codeBlock)++] = 0x44;
-        codeBlock[(*pos_codeBlock)++] = 0x89;
+        //movq %rxd,%rsi
         codeBlock[(*pos_codeBlock)++] = (0xd6 - 0x8) + i2 * 0x8;//desloca conforme o índice
       }
     }
@@ -132,11 +142,7 @@ void addAtribuicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int
       //movq $x,%rdi ou %rsi
       codeBlock[(*pos_codeBlock)++] = 0x48;
       codeBlock[(*pos_codeBlock)++] = 0xc7;
-
-      if(i1 == 1) codeBlock[(*pos_codeBlock)++] = 0xc7;  //  mov = $x,%rdi
-
-      else if(i1 == 2)  codeBlock[(*pos_codeBlock)++] = 0xc6; //  mov = $x,%rsi
-
+      codeBlock[(*pos_codeBlock)++] = (0xc7 + 0x1) - 0x1 *i1 ;
       // preenche o numero int no codeBlock para terminar a intrucao de mov
       preenche_cons(codeBlock, pos_codeBlock, i2);
     }
@@ -148,26 +154,47 @@ void addAtribuicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int
   {
     if(type2 == '$') //lado direto = constante
     {
-        //  movl = $x,%exd
-        codeBlock[(*pos_codeBlock)++] = 0x41;
-        codeBlock[(*pos_codeBlock)++] = (0xba - 0x1) + i1 * 0x1; //desloca conforme o índice
+        //  movq = $x,%rxd
+        codeBlock[(*pos_codeBlock)++] = 0x49;
+        codeBlock[(*pos_codeBlock)++] = 0xc7;
+        codeBlock[(*pos_codeBlock)++] = (0xc2 - 0x1) + i1 * 0x1; //desloca conforme o índice
         preenche_cons(codeBlock, pos_codeBlock, i2);
     }
     else if(type2 == 'v' && i2 != i1) //lado direito = variavel
     {
-        //  movl = $exd,%exd
-      codeBlock[(*pos_codeBlock)++] = 0x45;
+        //  movq = %rxd,%rxd
+      codeBlock[(*pos_codeBlock)++] = 0x4d;
       codeBlock[(*pos_codeBlock)++] = 0x89;
       codeBlock[(*pos_codeBlock)++] = ((0xd1 + 0x1 * i1) - 0x8) + 0x8 * i2;//desloca conforme os índices
     }
     else if(type2 == 'p') //lado direito = parametro
     {
       //  movl = $e(ds)i,%exd
-      codeBlock[(*pos_codeBlock)++] = 0x41;
+      codeBlock[(*pos_codeBlock)++] = 0x49;
       codeBlock[(*pos_codeBlock)++] = 0x89;
       codeBlock[(*pos_codeBlock)++] = (0xf9 + 0x1 * i1 + 0x8) - 0x8 * i2;//desloca conforme os índices
     }
   }
+  return;
+}
+
+void addAdicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int i1, char type2, int i2)
+{
+  if(type1 == 'p') //adicao de parametro (px += $y) -> addl $y,%e(ds)i
+  {
+    if(type2 == '$')
+    {
+      codeBlock[(*pos_codeBlock)++] = 0x48;
+      codeBlock[(*pos_codeBlock)++] = 0x81;
+      codeBlock[(*pos_codeBlock)++] =  (0xc7 + 0x1) - 0x1 * i1;
+      preenche_cons(codeBlock,pos_codeBlock,i2);
+    }
+    else if(type2 == 'v')
+    {
+
+    }
+  }
+  return;
 }
 
 void prologo(unsigned char *codeBlock, int *pos_codeBlock)
@@ -220,35 +247,21 @@ void prologo(unsigned char *codeBlock, int *pos_codeBlock)
 
 void addRet(unsigned char *codeBlock, int *pos_codeBlock, int i, char type)
 {
+    //utilizarei os registradores de 32 bits para facilitar o entendimento e a didática do codigo já que estamos mexendo com inteiros
   if(type == 'p')
   {
-    if(i == 1)
-    {
-    //  movq    %rdi,%rax
-      codeBlock[(*pos_codeBlock)++] = 0x48;
+    //  movl    %edi,%eax
       codeBlock[(*pos_codeBlock)++] = 0x89;
-      codeBlock[(*pos_codeBlock)++] = 0xf8;
-    }
-    else if (i == 2)
-    {
-      //movq %rsi,%rax
-      codeBlock[(*pos_codeBlock)++] = 0x48;
-      codeBlock[(*pos_codeBlock)++] = 0x89;
-      codeBlock[(*pos_codeBlock)++] = 0xf0;
-    }
+      codeBlock[(*pos_codeBlock)++] = (0xf8 + 0x8) - 0x8 * i;
   }
   else if(type == '$')
   {
     //  mov constante
-    codeBlock[(*pos_codeBlock)++] = 0x48;
-    codeBlock[(*pos_codeBlock)++] = 0xc7;
-    codeBlock[(*pos_codeBlock)++] = 0xc0;
-
+    codeBlock[(*pos_codeBlock)++] = 0xb8;
     preenche_cons (codeBlock, pos_codeBlock, i); // preenche em codeBlock os 8 espaços que o int ocupa
   }
   else if(type == 'v')
   {
-    //utilizarei os registradores de 32 bits para facilitar o entendimento e a didática do codigo já que estamos mechendo com inteiros
     codeBlock[(*pos_codeBlock)++] = 0x44;
     codeBlock[(*pos_codeBlock)++] = 0x89;
     codeBlock[(*pos_codeBlock)++] = (0xd0 - 0x8) + 0x8 * i;
@@ -258,6 +271,7 @@ void addRet(unsigned char *codeBlock, int *pos_codeBlock, int i, char type)
     fprintf(stderr, "comando invalido\n");
     exit(EXIT_FAILURE);
   }
+  return;
 }
 
 void finaliza(unsigned char *codeBlock, int *pos_codeBlock)
@@ -297,4 +311,6 @@ void finaliza(unsigned char *codeBlock, int *pos_codeBlock)
   codeBlock[(*pos_codeBlock)++] = 0xec;
   codeBlock[(*pos_codeBlock)++] = 0x5d;
   codeBlock[(*pos_codeBlock)++] = 0xc3;
+
+  return;
 }

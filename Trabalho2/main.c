@@ -78,7 +78,22 @@ int main(int argc, char *argv[])
   funcaoSB = geracod(myfp);
   // chama a função passando parâmetro apropriados
   res = (*funcaoSB) (10);
-  printf("\n 5? : %d\n", res);
+  printf("\n 5442? : %d\n", res);
+  liberacod(funcaoSB);
+  fclose(myfp);
+//fim do teste atribuicao + retorno
+
+//teste testesimples.txt
+
+  if ((myfp = fopen("scripts/adicao.txt", "r")) == NULL)
+  {
+    perror("Falha na abertura do arquivo fonte");
+    exit(1);
+  }
+  funcaoSB = geracod(myfp);
+  // chama a função passando parâmetro apropriados
+  res = (*funcaoSB) (100);
+  printf("\n 228? : %d\n", res);
   liberacod(funcaoSB);
   fclose(myfp);
 //fim do teste atribuicao + retorno
