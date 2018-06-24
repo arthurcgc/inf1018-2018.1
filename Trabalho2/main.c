@@ -81,9 +81,9 @@ int main(int argc, char *argv[])
   printf("testesimples.txt\n 5442? : %d\n", res);
   liberacod(funcaoSB);
   fclose(myfp);
-//fim do teste atribuicao + retorno
+//fim do testesimples.txt
 
-//teste testesimples.txt
+//teste adicao.txt
 
   if ((myfp = fopen("scripts/adicao.txt", "r")) == NULL)
   {
@@ -93,10 +93,40 @@ int main(int argc, char *argv[])
   funcaoSB = geracod(myfp);
   // chama a função passando parâmetro apropriados
   res = (*funcaoSB) (100,200);
-  printf("teste adicao\n 300? : %d\n", res);
+  printf("teste adicao\n 302? : %d\n", res);
   liberacod(funcaoSB);
   fclose(myfp);
-//fim do teste atribuicao + retorno
+//fim do teste adicao
+
+//teste subtracao.txt
+
+  if ((myfp = fopen("scripts/subtracao.txt", "r")) == NULL)
+  {
+    perror("Falha na abertura do arquivo fonte");
+    exit(1);
+  }
+  funcaoSB = geracod(myfp);
+  // chama a função passando parâmetro apropriados
+  res = (*funcaoSB) (100,200);
+  printf("teste subtracao\n 302? : %d\n", res);
+  liberacod(funcaoSB);
+  fclose(myfp);
+//fim do teste subtracao
+
+//teste multiplicacao.txt
+
+  if ((myfp = fopen("scripts/multiplicacao.txt", "r")) == NULL)
+  {
+    perror("Falha na abertura do arquivo fonte");
+    exit(1);
+  }
+  funcaoSB = geracod(myfp);
+  // chama a função passando parâmetro apropriados
+  res = (*funcaoSB) (100,200);
+  printf("teste multiplicacao\n 200? : %d\n", res);
+  liberacod(funcaoSB);
+  fclose(myfp);
+//fim do teste multiplicacao
 
   return 0;
 }

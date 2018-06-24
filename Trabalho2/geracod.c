@@ -24,6 +24,10 @@ void addAtribuicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int
 
 void addAdicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int i1, char type2, int i2);
 
+void addSubtracao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int i1, char type2, int i2);
+
+void addMultiplicacao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int i1, char type2, int i2);
+
 void finaliza(unsigned char *codeBlock, int *pos_codeBlock);
 
 void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock);
@@ -90,7 +94,7 @@ void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock)
       }
       addAtribuicao(codeBlock,pos_codeBlock,type1,i1,type2,i2);
     }
-    else if(line[3] == '+' && line[4] == '=') //operacao
+    else if(line[3] == '+' && line[4] == '=') //adicao
     {
       if(sscanf(line+5," %c%d", &type2, &i2) !=2)
       {
@@ -98,6 +102,24 @@ void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock)
         exit(EXIT_FAILURE);
       }
       addAdicao(codeBlock,pos_codeBlock,type1,i1,type2,i2);
+    }
+    else if(line[3] == '-' && line[4] == '=') //adicao
+    {
+      if(sscanf(line+5," %c%d", &type2, &i2) !=2)
+      {
+        fprintf(stderr, "comando invalido\n");
+        exit(EXIT_FAILURE);
+      }
+      addSubtracao(codeBlock,pos_codeBlock,type1,i1,type2,i2);
+    }
+    else if(line[3] == '*' && line[4] == '=') //adicao
+    {
+      if(sscanf(line+5," %c%d", &type2, &i2) !=2)
+      {
+        fprintf(stderr, "comando invalido\n");
+        exit(EXIT_FAILURE);
+      }
+      addMultiplicacao(codeBlock,pos_codeBlock,type1,i1,type2,i2);
     }
   }
   return;
@@ -226,6 +248,120 @@ void addAdicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int i1,
       codeBlock[(*pos_codeBlock)++] = 0x4d;
       codeBlock[(*pos_codeBlock)++] = 0x01;
       codeBlock[(*pos_codeBlock)++] = ((0xd2 - 0x1) + 0x1 * i1) - 0x8 + (0x8 * i2) ;
+    }
+  }
+
+  return;
+}
+
+void addSubtracao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int i1, char type2, int i2)
+{
+  if(type1 == 'p') //adicao de parametro (px += $y) -> addl $y,%e(ds)i
+  {
+    if(type2 == '$')
+    {
+      //subq $x,%r(ds)i
+      codeBlock[(*pos_codeBlock)++] = 0x48;
+      codeBlock[(*pos_codeBlock)++] = 0x81;
+      codeBlock[(*pos_codeBlock)++] =  (0xef + 0x1) - 0x1 * i1;
+      preenche_cons(codeBlock,pos_codeBlock,i2);
+    }
+    else if(type2 == 'v')
+    {
+      codeBlock[(*pos_codeBlock)++] = 0x4c;
+      codeBlock[(*pos_codeBlock)++] = 0x29;
+      codeBlock[(*pos_codeBlock)++] = ((0xd7 + 0x1) - (0x1 * i1) - 0x8) + 0x8 * i2;
+    }
+    else if(type2 == 'p' && i1 != i2)
+    {
+      codeBlock[(*pos_codeBlock)++] = 0x48;
+      codeBlock[(*pos_codeBlock)++] = 0x29;
+      if(i1 == 1) codeBlock[(*pos_codeBlock)++] = 0xf7;
+      if(i1 == 2) codeBlock[(*pos_codeBlock)++] = 0xfe;
+    }
+    return;
+  }
+  else if(type1 == 'v')
+  {
+    if(type2 == '$')
+    {
+      codeBlock[(*pos_codeBlock)++] = 0x49;
+      codeBlock[(*pos_codeBlock)++] = 0x81;
+      codeBlock[(*pos_codeBlock)++] = (0xea - 0x1) + 0x1 * i1;
+      preenche_cons(codeBlock,pos_codeBlock,i2);
+    }
+    else if(type2 == 'p')
+    {
+      codeBlock[(*pos_codeBlock)++] = 0x49;
+      codeBlock[(*pos_codeBlock)++] = 0x29;
+      if(i2 == 1) codeBlock[(*pos_codeBlock)++] = (0xfa - 0x1) + 0x1 * i1;
+      if(i2 == 2) codeBlock[(*pos_codeBlock)++] = (0xf2 - 0x1) + 0x1 * i1;
+    }
+    else if(type2 == 'v')
+    {
+      codeBlock[(*pos_codeBlock)++] = 0x4d;
+      codeBlock[(*pos_codeBlock)++] = 0x29;
+      codeBlock[(*pos_codeBlock)++] = ((0xd2 - 0x1) + 0x1 * i1) - 0x8 + (0x8 * i2) ;
+    }
+  }
+
+  return;
+
+}
+
+void addMultiplicacao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int i1, char type2, int i2)
+{
+  if(type1 == 'p') //adicao de parametro (px += $y) -> addl $y,%e(ds)i
+  {
+    if(type2 == '$')
+    {
+      //addq $x,%r(ds)i
+      codeBlock[(*pos_codeBlock)++] = 0x48;
+      codeBlock[(*pos_codeBlock)++] = 0x69;
+      codeBlock[(*pos_codeBlock)++] =  (0xff + 0x9) - 0x9 * i1;
+      preenche_cons(codeBlock,pos_codeBlock,i2);
+      return;
+    }
+    else if(type2 == 'v')
+    {
+      codeBlock[(*pos_codeBlock)++] = 0x49;
+      codeBlock[(*pos_codeBlock)++] = 0x0f;
+      codeBlock[(*pos_codeBlock)++] = 0xaf;
+      codeBlock[(*pos_codeBlock)++] = ((0xfa - 0x1) + (0x1 * i2) + 0x8) - 0x8 * i1;
+    }
+    else if(type2 == 'p' && i1 != i2)
+    {
+      codeBlock[(*pos_codeBlock)++] = 0x48;
+      codeBlock[(*pos_codeBlock)++] = 0x0f;
+      codeBlock[(*pos_codeBlock)++] = 0xaf;
+      if(i1 == 1) codeBlock[(*pos_codeBlock)++] = 0xfe;
+      if(i1 == 2) codeBlock[(*pos_codeBlock)++] = 0xf7;
+    }
+    return;
+  }
+  else if(type1 == 'v')
+  {
+    if(type2 == '$')
+    {
+      codeBlock[(*pos_codeBlock)++] = 0x4d;
+      codeBlock[(*pos_codeBlock)++] = 0x69;
+      codeBlock[(*pos_codeBlock)++] = (0xd2 - 0x9) + 0x9 * i1;
+      preenche_cons(codeBlock,pos_codeBlock,i2);
+    }
+    else if(type2 == 'p')
+    {
+      codeBlock[(*pos_codeBlock)++] = 0x4c;
+      codeBlock[(*pos_codeBlock)++] = 0x0f;
+      codeBlock[(*pos_codeBlock)++] = 0xaf;
+      if(i2 == 1) codeBlock[(*pos_codeBlock)++] = (0xd7 - 0x8) + 0x8 * i1;
+      if(i2 == 2) codeBlock[(*pos_codeBlock)++] = (0xd6 - 0x8) + 0x8 * i1;
+    }
+    else if(type2 == 'v')
+    {
+      codeBlock[(*pos_codeBlock)++] = 0x4d;
+      codeBlock[(*pos_codeBlock)++] = 0x0f;
+      codeBlock[(*pos_codeBlock)++] = 0xaf;
+      codeBlock[(*pos_codeBlock)++] = ((0xd2 - 0x1) + 0x1 * i2) - 0x8 + (0x8 * i1) ;
     }
   }
 

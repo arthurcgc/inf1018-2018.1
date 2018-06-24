@@ -20,14 +20,15 @@ add:
     movq %r13, 24(%rsp)
 
   operacoes:
-    addq  %r10,%r10
-    addq  %r11,%r10 # v1 += v2
-    addq  %r12,%r10
-    addq  %r13,%r10
-    addq  %r10,%r11 # v2 += v1
-    addq  %r11,%r11
-    addq  %r12,%r11
-    addq  %r13,%r11
+    imulq %r10,%r10
+    imulq %r11,%r10 # v1 *= v2 -> imulq %r11,%r10
+    imulq %r12,%r10
+    imulq %r13,%r10
+    imulq %r10,%r11
+    imulq %r11,%r11
+    imulq %r12,%r11
+    imulq %r13,%r11
+
 
   fim:
     movq (%rsp), %r10
