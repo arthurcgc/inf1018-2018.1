@@ -4,4 +4,5 @@ v4 *= v3
 v1 := v3
 v1 *= v4
 v1 *= p1
-ret v1
+p2 *= v1
+ret p2
