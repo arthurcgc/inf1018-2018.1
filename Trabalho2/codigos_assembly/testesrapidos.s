@@ -20,16 +20,12 @@ add:
     movq %r13, 24(%rsp)
 
   operacoes:
-    imulq %r10,%r10
-    imulq %r11,%r10 # v1 *= v2 -> imulq %r11,%r10
-    imulq %r12,%r10
-    imulq %r13,%r10
-    imulq %r10,%r11
-    imulq %r11,%r11
-    imulq %r12,%r11
-    imulq %r13,%r11
-
-
+    movq $10,%r10
+    movq $5,%r11
+    jmp  ret
+    movq $15,%r11
+    ret:
+        movq %r11,%rax
   fim:
     movq (%rsp), %r10
     movq 8(%rsp), %r11

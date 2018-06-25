@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../geracod.h"
+#include "../../geracod.h"
 
 int main(int argc, char *argv[])
 {

@@ -15,8 +15,11 @@ void liberacod(void *pf)
 
 typedef int (*funcp) ();
 
-void prologo(unsigned char *codeBlock, int *pos_codeBlock);
+void addPartialJump(unsigned char *codeBlock,int *pos_codeBlock,int line2jump);
 
+void addRealJump(unsigned char *codeBlock, int linesread ,int *instr_size);
+
+void prologo(unsigned char *codeBlock, int *pos_codeBlock);
 
 void addRet(unsigned char *codeBlock, int *pos_codeBlock, int i, char type);
 
@@ -30,7 +33,7 @@ void addMultiplicacao(unsigned char *codeBlock, int *pos_codeBlock, char type1, 
 
 void finaliza(unsigned char *codeBlock, int *pos_codeBlock);
 
-void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock);
+void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock,int linesread);
 
 static void preenche_cons (unsigned char *codeBlock,int *pos_codeBlock, int num)
 {
@@ -42,8 +45,10 @@ static void preenche_cons (unsigned char *codeBlock,int *pos_codeBlock, int num)
 funcp geracod(FILE *f)
 {
   unsigned char* codeBlock = (unsigned char*) malloc(TAM_MAX); //bloco aonde vai ser armazenado codigo de maquina
-  char *line = (char*)malloc(sizeof(char)*MAX_LINE_SIZE);;
-  int linesread, pos_codeBlock = 0;
+  char *line = (char*)malloc(sizeof(char)*MAX_LINE_SIZE);
+  int *instr_size = (int*)malloc(sizeof(int)*MAX_LINES);
+  int linesread=0, i, pos_codeBlock=0, prologo_size;
+  unsigned char *cdblk;
 
   if(codeBlock == NULL)
   {
@@ -52,20 +57,28 @@ funcp geracod(FILE *f)
   }
 
   prologo(codeBlock, &pos_codeBlock);
+  prologo_size=pos_codeBlock;
   while( fscanf(f, " %[^\n]", line) == 1 && linesread<MAX_LINES)
   {
+    int last_poscodeblock=pos_codeBlock;
+    parseLine(line, codeBlock, &pos_codeBlock, linesread);
+    instr_size[linesread]=pos_codeBlock-last_poscodeblock;
     linesread++;
-    parseLine(line, codeBlock, &pos_codeBlock);
-
   }
-
+  for(i=0,cdblk=codeBlock+prologo_size;i<linesread;cdblk+=instr_size[i],++i)
+  {
+    if(*cdblk == 0xeb)
+    {
+      addRealJump(cdblk, i, instr_size);
+    }
+  }
   finaliza(codeBlock,&pos_codeBlock);
   return (funcp) ((codeBlock));
 }
 
-void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock)
+void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock,int linesread)
 {
-  int i1,i2;
+  int i1,i2,line2jump;
   char type1,type2;
   if (line[0] == 'r' ) //retorno
   {
@@ -122,7 +135,15 @@ void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock)
       addMultiplicacao(codeBlock,pos_codeBlock,type1,i1,type2,i2);
     }
   }
-  return;
+  else if(line[0] == 'g' && line[1] == 'o') //desvio incondicional
+  {
+    if(sscanf(line+2," %d", &line2jump) !=1)
+    {
+      fprintf(stderr, "comando invalido\n");
+      exit(EXIT_FAILURE);
+    }
+    addPartialJump(codeBlock,pos_codeBlock,line2jump);
+  }
 }
 
 void addAtribuicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int i1, char type2, int i2)
@@ -368,6 +389,23 @@ void addMultiplicacao(unsigned char *codeBlock, int *pos_codeBlock, char type1, 
   return;
 }
 
+void addPartialJump(unsigned char *codeBlock,int *pos_codeBlock,int line2jump)
+{
+  codeBlock[(*pos_codeBlock)++] = 0xeb;
+  codeBlock[(*pos_codeBlock)++] = (unsigned char) line2jump;
+}
+
+void addRealJump(unsigned char *codeBlock, int linesread ,int *instr_size)
+{
+  unsigned int line2jump=(unsigned int)*(codeBlock+1);
+  unsigned int nbytes2jump=0,i;
+  for (i=linesread+1;i<line2jump-1;++i)
+  {
+    nbytes2jump+=instr_size[i];
+  }
+  *(codeBlock+1) = (unsigned char) nbytes2jump;
+}
+
 void prologo(unsigned char *codeBlock, int *pos_codeBlock)
 {
 
@@ -414,7 +452,6 @@ void prologo(unsigned char *codeBlock, int *pos_codeBlock)
 
     return;
 }
-
 
 void addRet(unsigned char *codeBlock, int *pos_codeBlock, int i, char type)
 {
