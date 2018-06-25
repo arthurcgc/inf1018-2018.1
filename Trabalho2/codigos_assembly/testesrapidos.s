@@ -22,10 +22,15 @@ add:
   operacoes:
     movq $10,%r10
     movq $5,%r11
-    jmp  ret
-    movq $15,%r11
-    ret:
-        movq %r11,%rax
+    jmp   six
+      four:
+        movq $15,%r11
+    jmp seven
+      six:
+        jmp four
+      seven:
+        movq  %r11,%rax
+
   fim:
     movq (%rsp), %r10
     movq 8(%rsp), %r11

@@ -17,7 +17,7 @@ typedef int (*funcp) ();
 
 void addPartialJump(unsigned char *codeBlock,int *pos_codeBlock,int line2jump);
 
-void addRealJump(unsigned char *codeBlock, int linesread ,int *instr_size);
+void addRealJump(unsigned char *codeBlock, int linej ,int *instr_size);
 
 void prologo(unsigned char *codeBlock, int *pos_codeBlock);
 
@@ -395,13 +395,24 @@ void addPartialJump(unsigned char *codeBlock,int *pos_codeBlock,int line2jump)
   codeBlock[(*pos_codeBlock)++] = (unsigned char) line2jump;
 }
 
-void addRealJump(unsigned char *codeBlock, int linesread ,int *instr_size)
+void addRealJump(unsigned char *codeBlock, int linej ,int *instr_size)
 {
   unsigned int line2jump=(unsigned int)*(codeBlock+1);
-  unsigned int nbytes2jump=0,i;
-  for (i=linesread+1;i<line2jump-1;++i)
+  int nbytes2jump=0;
+  unsigned int i;
+  if (line2jump>linej)
   {
-    nbytes2jump+=instr_size[i];
+    for (i=linej+1;i<line2jump-1;++i)
+    {
+      nbytes2jump+=instr_size[i];
+    }
+  }
+  else
+  {
+    for (i=line2jump-1;i<=linej;++i)
+    {
+      nbytes2jump-=instr_size[i];
+    }
   }
   *(codeBlock+1) = (unsigned char) nbytes2jump;
 }
