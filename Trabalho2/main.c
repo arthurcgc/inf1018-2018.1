@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   funcaoSB = geracod(myfp);
   /* chama a função */
   res = (*funcaoSB) (3,6);  /* passando parâmetro apropriados */
-  printf("teste pulo incondicional\n 14? : %d\n", res);
+  printf("teste enunciado 5\n 14? : %d\n", res);
   liberacod(funcaoSB);
   fclose(myfp);
   /* FIM testa exemplo5 */
