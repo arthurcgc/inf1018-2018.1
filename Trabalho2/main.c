@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
   int res;
   funcp funcaoSB;
 
-// teste JUMP
+
   /* Abre o arquivo fonte */
   if ((myfp = fopen("scripts/jump.txt", "r")) == NULL)
   {
@@ -34,6 +34,22 @@ int main(int argc, char *argv[])
     funcaoSB = geracod(myfp);
     /* chama a função */
     res = (*funcaoSB) (0);  /* passando parâmetro apropriados */
+    printf("teste pulo condicional(if)\n -2? : %d\n", res);
+    liberacod(funcaoSB);
+    fclose(myfp);
+
+
+  // teste IF2
+    /* Abre o arquivo fonte */
+    if ((myfp = fopen("scripts/if2.txt", "r")) == NULL)
+    {
+      perror("Falha na abertura do arquivo fonte");
+      exit(1);
+    }
+    /* compila a função SB */
+    funcaoSB = geracod(myfp);
+    /* chama a função */
+    res = (*funcaoSB) (-1);  /* passando parâmetro apropriados */
     printf("teste pulo condicional(if)\n -2? : %d\n", res);
     liberacod(funcaoSB);
     fclose(myfp);

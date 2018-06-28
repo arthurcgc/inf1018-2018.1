@@ -64,6 +64,7 @@ funcp geracod(FILE *f)
   {
     int last_poscodeblock=pos_codeBlock;
     parseLine(line, codeBlock, &pos_codeBlock, linesread);
+
     instr_size[linesread]=pos_codeBlock-last_poscodeblock;
     linesread++;
   }
@@ -95,7 +96,6 @@ void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock,int line
       exit(EXIT_FAILURE);
     }
       addRet(codeBlock,pos_codeBlock, i1, type1);
-      return;
   }
 
   else if (line[0] == 'v' || line[0] == 'p') //operacao
@@ -160,7 +160,6 @@ void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock,int line
     }
     addPartialIf(type1, i1, codeBlock, pos_codeBlock,line2jump1,line2jump2);
   }
-
 }
 
 void addAtribuicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int i1, char type2, int i2)
