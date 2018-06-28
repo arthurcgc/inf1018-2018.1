@@ -20,18 +20,17 @@ add:
     movq %r13, 24(%rsp)
 
   operacoes:
-    movq $10,%r10
-    movq $5,%r11
-    jmp   six
-      four:
-        movq $15,%r11
-    jmp seven
-      six:
-        jmp four
-      seven:
-        movq  %r11,%rax
+    cmpq  $0,%rdi
+    jl    soma2
+    je    sub2
+    addq  $10000,%rdi
+    soma2:
+    addq  $2,%rdi
+    sub2:
+    subq  $2,%rdi
 
   fim:
+    movq  %rdi,%rax
     movq (%rsp), %r10
     movq 8(%rsp), %r11
     movq 16(%rsp), %r12

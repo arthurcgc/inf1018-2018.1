@@ -17,6 +17,8 @@ typedef int (*funcp) ();
 
 void addPartialJump(unsigned char *codeBlock,int *pos_codeBlock,int line2jump);
 
+void addPartialIf(char type,int i, unsigned char *codeBlock, int *pos_codeBlock, int line2jump1, int line2jump2 );
+
 void addRealJump(unsigned char *codeBlock, int linej ,int *instr_size);
 
 void prologo(unsigned char *codeBlock, int *pos_codeBlock);
@@ -71,6 +73,11 @@ funcp geracod(FILE *f)
     {
       addRealJump(cdblk, i, instr_size);
     }
+    else if(*(cdblk + 4)== 0x7c && *(cdblk + 6) == 0x74)
+    {
+      addRealJump(cdblk+4, i, instr_size);
+      addRealJump(cdblk+6, i, instr_size);
+    }
   }
   finaliza(codeBlock,&pos_codeBlock);
   return (funcp) ((codeBlock));
@@ -78,7 +85,7 @@ funcp geracod(FILE *f)
 
 void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock,int linesread)
 {
-  int i1,i2,line2jump;
+  int i1,i2,line2jump1,line2jump2;
   char type1,type2;
   if (line[0] == 'r' ) //retorno
   {
@@ -137,13 +144,23 @@ void parseLine(char *line, unsigned char *codeBlock, int *pos_codeBlock,int line
   }
   else if(line[0] == 'g' && line[1] == 'o') //desvio incondicional
   {
-    if(sscanf(line+2," %d", &line2jump) !=1)
+    if(sscanf(line+2," %d", &line2jump1) !=1)
     {
       fprintf(stderr, "comando invalido\n");
       exit(EXIT_FAILURE);
     }
-    addPartialJump(codeBlock,pos_codeBlock,line2jump);
+    addPartialJump(codeBlock,pos_codeBlock,line2jump1);
   }
+  else if(line[0] == 'i' && line[1] == 'f') //desvio incondicional
+  {
+    if(sscanf(line+2," %c%d %d %d",&type1, &i1, &line2jump1, &line2jump2) !=4)
+    {
+      fprintf(stderr, "comando invalido\n");
+      exit(EXIT_FAILURE);
+    }
+    addPartialIf(type1, i1, codeBlock, pos_codeBlock,line2jump1,line2jump2);
+  }
+
 }
 
 void addAtribuicao(unsigned char *codeBlock, int *pos_codeBlock, char type1, int i1, char type2, int i2)
@@ -398,7 +415,7 @@ void addPartialJump(unsigned char *codeBlock,int *pos_codeBlock,int line2jump)
 void addRealJump(unsigned char *codeBlock, int linej ,int *instr_size)
 {
   unsigned int line2jump=(unsigned int)*(codeBlock+1);
-  int nbytes2jump=0;
+  int nbytes2jump=0; //calcula a quantidade de bytes necessarios pra pular e substitui em codeBlock
   unsigned int i;
   if (line2jump>linej)
   {
@@ -415,6 +432,28 @@ void addRealJump(unsigned char *codeBlock, int linej ,int *instr_size)
     }
   }
   *(codeBlock+1) = (unsigned char) nbytes2jump;
+}
+
+void addPartialIf(char type,int i, unsigned char *codeBlock, int *pos_codeBlock, int line2jump1, int line2jump2 )
+{
+  if(type == 'v') //adiciona a isntrucao de comp
+  {
+    codeBlock[(*pos_codeBlock)++] = 0x49;
+    codeBlock[(*pos_codeBlock)++] = 0x83;
+    codeBlock[(*pos_codeBlock)++] = (0xfa - 0x1) + 0x1 * i;
+    codeBlock[(*pos_codeBlock)++] = 0x00;
+  }
+  else if(type == 'p')
+  {
+    codeBlock[(*pos_codeBlock)++] = 0x48;
+    codeBlock[(*pos_codeBlock)++] = 0x83;
+    codeBlock[(*pos_codeBlock)++] = (0xff + 0x1) - 0x1 * i;
+    codeBlock[(*pos_codeBlock)++] = 0x00;
+  }
+  codeBlock[(*pos_codeBlock)++] = 0x7c;
+  codeBlock[(*pos_codeBlock)++] = (unsigned char) line2jump1;
+  codeBlock[(*pos_codeBlock)++] = 0x74;
+  codeBlock[(*pos_codeBlock)++] = (unsigned char) line2jump2;
 }
 
 void prologo(unsigned char *codeBlock, int *pos_codeBlock)
