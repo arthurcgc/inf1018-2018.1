@@ -2,6 +2,8 @@ v1 := $10
 v2 := $5
 go 6
 v2 := $15
-go 7
-go 4
+go 9
+v2 += v1
+go 5
+ret v1
 ret v2

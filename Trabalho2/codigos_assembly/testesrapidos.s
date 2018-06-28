@@ -20,17 +20,31 @@ add:
     movq %r13, 24(%rsp)
 
   operacoes:
-    movq  $10,%r10
-    movq  $5,%r11
-    jmp  six
-    four:
-    movq  $15,%r11
-    jmp   fim
-    six:
-    jmp four
+   if:
+   cmpl $0,%edi
+   jl   ret1
+   je   ret0
+   retn5: #retorna 1
+    movq $-5,%rax
+    movq (%rsp), %r10
+    movq 8(%rsp), %r11
+    movq 16(%rsp), %r12
+    movq 24(%rsp), %r13
+    movq %rbp, %rsp
+    popq %rbp
+    ret
+   ret0: #retorna 1
+    movq $0,%rax
+    movq (%rsp), %r10
+    movq 8(%rsp), %r11
+    movq 16(%rsp), %r12
+    movq 24(%rsp), %r13
+    movq %rbp, %rsp
+    popq %rbp
+    ret
 
-  fim:
-    movq  %r11,%rax
+   ret1: #retorna 1
+    movq $1,%rax
     movq (%rsp), %r10
     movq 8(%rsp), %r11
     movq 16(%rsp), %r12

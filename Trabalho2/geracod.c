@@ -74,13 +74,12 @@ funcp geracod(FILE *f)
     {
       addRealJump(cdblk, i, instr_size);
     }
-    else if(*(cdblk + 4)== 0x7c && *(cdblk + 6) == 0x74)
+    else if(*(cdblk + 3) == 0x7c && *(cdblk + 5) == 0x74)// intrucao de cmpq = 4 bytes
     {
-      addRealJump(cdblk+4, i, instr_size);
-      addRealJump(cdblk+6, i, instr_size);
+      addRealJump(cdblk+3, i, instr_size);
+      addRealJump(cdblk+5, i, instr_size);
     }
   }
-  finaliza(codeBlock,&pos_codeBlock);
   return (funcp) ((codeBlock));
 }
 
@@ -407,16 +406,20 @@ void addMultiplicacao(unsigned char *codeBlock, int *pos_codeBlock, char type1, 
 
 void addPartialJump(unsigned char *codeBlock,int *pos_codeBlock,int line2jump)
 {
+  // adiciona um pulo generico com a informacao da linha que queremos ir
   codeBlock[(*pos_codeBlock)++] = 0xeb;
   codeBlock[(*pos_codeBlock)++] = (unsigned char) line2jump;
 }
 
-void addRealJump(unsigned char *codeBlock, int linej ,int *instr_size)
+
+//linej = linha em que nos encontramos no script
+void addRealJump(unsigned char *codeBlock, int linej ,int *instr_size)//substitui a linha inserida no codeBlock pelo numero de bytes correspondentes que devemos pular
 {
-  unsigned int line2jump=(unsigned int)*(codeBlock+1);
+  unsigned int line2jump=(unsigned int)*(codeBlock+1); // guarda em line2jump a linha em decimal que desejamos alcançar com o pulo
   int nbytes2jump=0; //calcula a quantidade de bytes necessarios pra pular e substitui em codeBlock
   unsigned int i;
-  if (line2jump>linej)
+  if((*codeBlock) == 0x7c) nbytes2jump += 2;//temos que somar dois pois há a instrução "je" que ocupa 2 bytes e nao é levada em consideração no instr_size porque ela faz parte de uma instrução de 8 bytes cmpq+jl+je = 8
+  if (line2jump>linej) //checa se o jump é para cima ou para baixo do codigo, nesse caso o jump é para baixo
   {
     for (i=linej+1;i<line2jump-1;++i)
     {
@@ -435,16 +438,15 @@ void addRealJump(unsigned char *codeBlock, int linej ,int *instr_size)
 
 void addPartialIf(char type,int i, unsigned char *codeBlock, int *pos_codeBlock, int line2jump1, int line2jump2 )
 {
+  //no caso do if devemos comparar com cmpl pois $0 é um numero em 32 bits
   if(type == 'v') //adiciona a isntrucao de comp
   {
-    codeBlock[(*pos_codeBlock)++] = 0x49;
     codeBlock[(*pos_codeBlock)++] = 0x83;
     codeBlock[(*pos_codeBlock)++] = (0xfa - 0x1) + 0x1 * i;
     codeBlock[(*pos_codeBlock)++] = 0x00;
   }
   else if(type == 'p')
   {
-    codeBlock[(*pos_codeBlock)++] = 0x48;
     codeBlock[(*pos_codeBlock)++] = 0x83;
     codeBlock[(*pos_codeBlock)++] = (0xff + 0x1) - 0x1 * i;
     codeBlock[(*pos_codeBlock)++] = 0x00;
@@ -504,13 +506,13 @@ void prologo(unsigned char *codeBlock, int *pos_codeBlock)
 
 void addRet(unsigned char *codeBlock, int *pos_codeBlock, int i, char type)
 {
-    //utilizarei os registradores de 32 bits para facilitar o entendimento e a didática do codigo já que estamos mexendo com inteiros
   if(type == 'p')
   {
     //  movl    %r(ds)i,%rax
       codeBlock[(*pos_codeBlock)++] = 0x48;
       codeBlock[(*pos_codeBlock)++] = 0x89;
       codeBlock[(*pos_codeBlock)++] = (0xf8 + 0x8) - 0x8 * i;
+      finaliza(codeBlock,pos_codeBlock);
   }
   else if(type == '$')
   {
@@ -519,17 +521,14 @@ void addRet(unsigned char *codeBlock, int *pos_codeBlock, int i, char type)
     codeBlock[(*pos_codeBlock)++] = 0xc7;
     codeBlock[(*pos_codeBlock)++] = 0xc0;
     preenche_cons (codeBlock, pos_codeBlock, i); // preenche em codeBlock os 8 espaços que o int ocupa
+    finaliza(codeBlock,pos_codeBlock);
   }
   else if(type == 'v')
   {
     codeBlock[(*pos_codeBlock)++] = 0x4c;
     codeBlock[(*pos_codeBlock)++] = 0x89;
     codeBlock[(*pos_codeBlock)++] = (0xd0 - 0x8) + 0x8 * i;
-  }
-  else
-  {
-    fprintf(stderr, "comando invalido\n");
-    exit(EXIT_FAILURE);
+    finaliza(codeBlock,pos_codeBlock);
   }
   return;
 }
